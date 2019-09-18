@@ -1,69 +1,59 @@
-import React, { Component } from "react";
-import styled, { createGlobalStyle } from "styled-components";
-import Main from "./components/Main";
-import List from "./components/List";
+import React, { Component } from 'react';
+import styled, { createGlobalStyle } from 'styled-components';
+import Main from './components/Main';
+import List from './components/List';
+import axios from 'axios';
 
 class App extends Component {
-  state = {
-    pokemons: [],
-    selectedPokemonUrl: null,
-    selectedPokemonData: null
-  };
+	state = {
+		pokemons: [],
+		selectedPokemonUrl: '',
+		selectedPokemonData: null
+	};
 
-  async componentDidMount() {
-    try {
-      const response = await fetch("https://pokeapi.co/api/v2/pokemon/");
-      const data = await response.json();
-      // console.log(data);
+	async componentDidMount() {
+		const pokemons = await this.fetchPokemons({ url: 'https://pokeapi.co/api/v2/pokemon/' });
+		const selectedPokemonUrl = pokemons[0].url;
+		const selectedPokemonData = await this.fetchSelectedPokemon({ url: selectedPokemonUrl });
+		this.setState({
+			pokemons,
+			selectedPokemonUrl,
+			selectedPokemonData
+		});
+	}
+	async fetchPokemons({ url }) {
+		const { data } = await axios.get(url);
+		return data.results;
+	}
+	async fetchSelectedPokemon({ url }) {
+		const { data } = await axios.get(url);
+		return data;
+	}
+	handlePokemonClick = async url => {
+		const selectedPokemonData = await this.fetchSelectedPokemon({ url });
+		this.setState({
+			selectedPokemonUrl: url,
+			selectedPokemonData
+		});
+	};
 
-      const { results } = data;
-      this.setState({
-        pokemons: results
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  handlePokemonClick = url => {
-    // alert(url);
-    this.setState({
-      selectedPokemonUrl: url
-    });
-  };
-
-  async componentDidUpdate(prevProps, prevState) {
-    const { selectedPokemonUrl } = this.state;
-    try {
-      if (selectedPokemonUrl !== prevState.selectedPokemonUrl) {
-        const response = await fetch(selectedPokemonUrl);
-        const data = await response.json();
-        // console.log(data);
-
-        this.setState({
-          selectedPokemonData: data
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  render() {
-    const { pokemons, selectedPokemonUrl, selectedPokemonData } = this.state;
-
-    return (
-      <Wrapper>
-        <GlobalStyle />
-        <Main selectedPokemonData={selectedPokemonData} />
-        <List
-          pokemons={pokemons}
-          onPokemonClick={this.handlePokemonClick}
-          selectedPokemonUrl={selectedPokemonUrl}
-        />
-      </Wrapper>
-    );
-  }
+	render() {
+		console.info('App');
+		const { pokemons, selectedPokemonUrl, selectedPokemonData } = this.state;
+		return (
+			<Wrapper>
+				<GlobalStyle />
+				{selectedPokemonData && <Main selectedPokemonData={selectedPokemonData} />}
+				{pokemons && selectedPokemonUrl && (
+					<List
+						pokemons={pokemons}
+						onPokemonClick={this.handlePokemonClick}
+						selectedPokemonUrl={selectedPokemonUrl}
+					/>
+				)}
+			</Wrapper>
+		);
+	}
 }
 
 const GlobalStyle = createGlobalStyle`
@@ -76,11 +66,10 @@ const GlobalStyle = createGlobalStyle`
     font-family: "NanumSquare";
   }
 `;
-
 const Wrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
 `;
 
 export default App;

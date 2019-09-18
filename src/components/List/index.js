@@ -1,45 +1,46 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
-export default class List extends React.Component {
-  render() {
-    const { pokemons, onPokemonClick, selectedPokemonUrl } = this.props;
+List.propTypes = {
+	pokemons: PropTypes.array.isRequired,
+	selectedPokemonUrl: PropTypes.string.isRequired,
+	onPokemonClick: PropTypes.func.isRequired
+};
 
-    return (
-      <Wrapper>
-        {pokemons.map(pokemon => {
-          const { name, url } = pokemon;
-          return (
-            <Item
-              key={url}
-              onClick={() => onPokemonClick(url)}
-              active={url === selectedPokemonUrl}
-            >
-              {name}
-            </Item>
-          );
-        })}
-      </Wrapper>
-    );
-  }
+function List({ pokemons, selectedPokemonUrl, onPokemonClick }) {
+	console.info('List');
+	let list = null;
+	if (pokemons && pokemons.length > 0)
+		list = pokemons.map(pokemon => (
+			<Item
+				key={pokemon.url}
+				onClick={() => onPokemonClick(pokemon.url)}
+				active={pokemon.url === selectedPokemonUrl}
+			>
+				{pokemon.name}
+			</Item>
+		));
+
+	return <Wrapper>{list}</Wrapper>;
 }
 
 const Wrapper = styled.div`
-  display: inline-block;
-  width: 250px;
-  height: 800px;
-  border: 3px solid #333;
-  border-left: 0px;
-  overflow-y: scroll;
+	display: inline-block;
+	width: 150px;
+	height: 500px;
+	border: 3px solid #333;
+	border-left: 0px;
+	overflow-y: scroll;
+`;
+const Item = styled.div`
+	cursor: pointer;
+	height: 50px;
+	padding: 10px 10px;
+	font-size: 20px;
+	font-weight: 600;
+	color: ${props => (props.active ? '#fff' : '#333')};
+	background-color: ${props => (props.active ? '#333' : '#f9f9f9')};
 `;
 
-const Item = styled.div`
-  cursor: pointer;
-  height: 60px;
-  padding: 15px 20px;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1;
-  color: ${props => (props.active ? "#fff" : "#333")};
-  background-color: ${props => (props.active ? "#333" : "#f9f9f9")};
-`;
+export default List;
